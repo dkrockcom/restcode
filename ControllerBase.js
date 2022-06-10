@@ -1,0 +1,65 @@
+const fs = require('fs');
+const path = require('path');
+const httpContext = require('./Helper/HttpContext');
+const mongoose = require('mongoose');
+const { controller, messages } = require('./constants');
+
+class ControllerBase {
+
+    isAuthEnabled = true;
+    routeParams = [];
+
+    response(status, message, data) {
+        let option = {
+            [controller.responseKey.SUCCESS]: status,
+            [controller.responseKey.DATA]: data
+        }
+        if (message)
+            option[controller.responseKey.MESSAGE] = message;
+
+        this._res.json(option);
+    }
+
+    get model() {
+        return mongoose.model(this.constructor.name);
+    }
+
+    async init(req, res, next) {
+        this.httpContext = new httpContext(req, res, next);
+        if (this.isAuthEnabled && !this.httpContext.isAuthenticated) {
+            res.statusCode = 401;
+            res.send({ success: false, message: "UNAUTHORIZED_ACCESS" });
+            return;
+        }
+        let toReturn = this.execute && await this.execute(this.httpContext);
+        if (toReturn) {
+            if (Buffer.isBuffer(toReturn)) {
+                res.write(toReturn);
+            } else if (toReturn && typeof toReturn === "object") {
+                res.json(toReturn);
+            } else {
+                res.send(toReturn);
+            }
+            res.end();
+        }
+    }
+
+    async execute(http) { throw new Error("Not Implemented"); }
+    async afterSave(http) { return null; };
+    async beforeSave(http) { return null; };
+
+    async getCombos(http) {
+        const localLookupListPath = path.resolve('LookupList.js');
+        const hasLookupList = fs.existsSync(localLookupListPath);
+        let LookupList = null;
+        if (hasLookupList) {
+            LookupList = require(localLookupListPath);
+        } else {
+            LookupList = require('./Helper/LookupListBase');
+        }
+        LookupList = new LookupList();
+        LookupList.comboList = http.params["combos"] || [];
+        return await LookupList.LoadCombo();
+    }
+}
+module.exports = ControllerBase;
