@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2022-present, Codehuntz.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 class PDF {
     static Export({ filename, data, config, http }) {
         http.response.send("Feature not implemented, please contect to administrator.");
