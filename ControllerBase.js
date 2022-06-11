@@ -53,7 +53,13 @@ class ControllerBase {
 
     async execute(http) { throw new Error("Not Implemented"); }
     async afterSave(http) { return null; };
-    async beforeSave(http) { return null; };
+    async beforeSave(http, response) { return null; };
+
+    async afterLoad(http) { return null; };
+    async beforeLoad(http, response) { return null; };
+
+    async afterDelete(http, id) { return null; };
+    async beforeDelete(http, id) { return null; };
 
     async getCombos(http) {
         const localLookupListPath = path.resolve('LookupList.js');

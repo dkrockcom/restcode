@@ -12,7 +12,10 @@ const TextEngine = require("./TextEngine");
 const NotificationQueue = require('./../Model/NotificationQueue');
 
 class Notification {
-    //Function for add email in table for process
+    /**
+     * Function for add email in queue for process
+     * @param  {NotificationParams} params - NotificationParams class instance
+     */
     static async sendEmail(param = new NotificationParams()) {
         let nq = new NotificationQueue({
             to: param.to,
@@ -33,7 +36,11 @@ class Notification {
         await nq.save();
     }
 
-    //Function for add sms in table for process
+
+    /**
+     * Function for add sms in table for process
+     * @param  {NotificationParams} params - NotificationParams class instance
+     */
     static async sendText(param = new NotificationParams()) {
         let nq = new NotificationQueue({
             to: param.to,
@@ -45,13 +52,19 @@ class Notification {
         await nq.save();
     }
 
-    //Function for send email instant without email queue
+    /**
+     * Function for send email instant without email queue
+     * @param  {NotificationParams} params - NotificationParams class instance
+     */
     static async sendInstantEmail(params) {
         let ee = new EmailEngine();
         return await ee.sendMail(params);
     }
 
-    //Function for send SMS instant without email queue
+    /**
+     * Function for send SMS instant without email queue
+     * @param  {NotificationParams} params - NotificationParams class instance
+     */
     static async sendInstantText(params) {
         let te = new TextEngine();
         return await te.sendText(params);

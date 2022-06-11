@@ -6,9 +6,10 @@
  */
 
 const NodeCronJob = require('cron');
+const Logger = require('./Helper/Logger');
 
-let Tasks = [];
-let ActiveTask = [];
+const Tasks = [];
+const ActiveTask = [];
 
 class TaskManager {
     static get Tasks() { return Tasks };
@@ -19,16 +20,35 @@ class TaskManager {
 
     static Initialize() {
         this.Tasks.forEach(activeTask => {
-            const job = new NodeCronJob.CronJob(activeTask.Interval, activeTask.Task.execute, null, true);
+            const job = new NodeCronJob.CronJob(activeTask.Interval, async () => {
+                const TaskKey = `${activeTask.Name}_TASK`;
+                try {
+                    console.time(TaskKey);
+                    await activeTask.Task.execute();
+                    console.time(TaskKey);
+                } catch (ex) {
+                    Logger.error(ex);
+                }
+            }, null, true);
             this.ActiveTask.push({ name: activeTask.Name, task: job });
             job.start();
         });
     }
 
+    /**
+     * Add - function for Add task
+     * @param  {Object} task - Task Class instance
+     * @param  {String} interval - Task interval
+     * @param  {String} name - Taks Name
+     */
     static Add(task, interval, name) {
         this.Tasks.push({ Task: task, Interval: interval, Name: name });
     }
 
+    /**
+     * Start - function for start task based on name
+     * @param  {String} name - Task Name
+     */
     static Start(name) {
         let index = this.ActiveTask.findIndex(e => e.name === name);
         if (index > -1) {
@@ -37,6 +57,10 @@ class TaskManager {
         }
     }
 
+    /**
+     * Stop - function for Stop task based on name
+     * @param  {String} name - Task Name
+     */
     static Stop(name) {
         let index = this.ActiveTask.findIndex(e => e.name === name);
         if (index > -1) {
@@ -45,6 +69,9 @@ class TaskManager {
         }
     }
 
+    /**
+     * StartAll - function for start all Tasks/scheduler
+     */
     static StartAll(name) {
         this.ActiveTask.forEach(taskRecord => {
             if (!taskRecord.task.running) {
@@ -53,6 +80,9 @@ class TaskManager {
         });
     }
 
+    /**
+     * StopAll - function for stop all Tasks/scheduler
+     */
     static StopAll() {
         this.ActiveTask.forEach(taskRecord => {
             if (taskRecord.task.running) {
@@ -61,6 +91,9 @@ class TaskManager {
         });
     }
 
+    /**
+     * RemoveAll - function for remove all Tasks/scheduler
+     */
     static RemoveAll() {
         this.ActiveTask.forEach(taskRecord => {
             if (taskRecord.task.running) {

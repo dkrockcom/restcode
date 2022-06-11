@@ -45,15 +45,21 @@ class Controller extends ControllerBase {
         try {
             switch (http.params.action.toUpperCase()) {
                 case controller.action.SAVE:
+                    await this.beforeSave(http);
                     response = await this.save(http);
+                    await this.afterSave(http, response);
                     break;
 
                 case controller.action.LOAD:
+                    await this.beforeLoad(http);
                     response = await this.load(http, id, populate);
+                    await this.afterLoad(http, response);
                     break;
 
                 case controller.action.DELETE:
+                    await this.beforeDelete(http, id);
                     response = await this.delete(id);
+                    await this.afterDelete(http, id);
                     break;
 
                 case controller.action.LIST:
