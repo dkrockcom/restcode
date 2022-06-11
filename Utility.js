@@ -8,9 +8,13 @@
 const md5 = require('md5');
 const fs = require("fs");
 const path = require('path');
-const Logger = require('./Helper/Logger');
 
 class Utility {
+
+    /**
+     * camelCase - Function for convert string to camel case string word
+     * @param  {String} str - string value
+     */
     static camelCase(str) {
         return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
             return index == 0 ? word.toLowerCase() : word.toUpperCase();
@@ -18,12 +22,20 @@ class Utility {
     }
 
     static get passwordHashRound() { return 8 };
+
     /**
+     * isNullOrEmpty - Function for check value null or empty string or undefined
      * @param {String} - Value which need to check.
      */
     static isNullOrEmpty(val) {
         return val === "" || val === undefined || val === null;
     }
+
+    /**
+     * toInt - Convert value to Integer
+     * @param  {Value} value - Value for conver to integer
+     * @param  {Number} defaultValue - Default value which can send while call the function
+     */
     static toInt(value, defaultValue) {
         let val = null;
         try {
@@ -44,17 +56,26 @@ class Utility {
         return value;
     }
 
-    static generateHash(password) {
-        return md5(password);
+    /**
+     * generateHash - Craete MD5 Hash Value
+     * @param  {String} value - String value for convert to md5
+     */
+    static generateHash(value) {
+        return md5(value);
     }
 
     /**
+     * getDirectoryList - Fetch all Directory List from specific location
      * @param pathFormRoot Directory Path from root.
      */
     static getDirectoryList(pathFormRoot) {
         return fs.readdirSync(pathFormRoot, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
     }
 
+    /**
+     * validateParams - Validate Parameters
+     * @param  {Value} str
+     */
     static validateParams(str) {
         if (typeof str !== 'string') return str;
         try {
@@ -65,8 +86,11 @@ class Utility {
             return str;
         }
     }
-
-    static generateUUID(performance) { // Public Domain/MIT
+    /**
+     * generateUUID - Use for Generate unique id number
+     * @param  {Date} performance - Date parameter which is optional
+     */
+    static generateUUID(performance) {
         var d = new Date().getTime();//Timestamp
         var d2 = (performance && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -81,7 +105,11 @@ class Utility {
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
     }
-
+    /**
+     * viewFormat - Data unit view
+     * @param  {Number} num 
+     * @param  {Number} digits
+     */
     static viewFormat(num, digits) {
         var si = [
             { value: 1, symbol: "" },
@@ -101,14 +129,18 @@ class Utility {
         }
         return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
     }
-
+    /**
+     * deSerializeObject - Convert json string to json
+     * @param  {String} value - String value which need to convert
+     * @param  {JSON} defaultValue - Default value which will requrn if conversion failed
+     */
     static deSerializeObject(value, defaultValue = {}) {
         let returnValue = defaultValue;
         try {
             if (value)
                 returnValue = JSON.parse(value);
         } catch (ex) {
-            Logger.error(ex);
+            throw ex;
         }
         return returnValue;
     }

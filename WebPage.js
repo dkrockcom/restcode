@@ -9,9 +9,15 @@ const HttpContext = require('./Helper/HttpContext');
 
 class WebPage {
 
+    /**
+     * Route Parameter which can we be define for page and api http://localhost/user/124, where is 123 is id param
+     * @Example { name: "id", required: true }
+     */
     routeParams = [];
     route = "";
-    httpHelper = null;
+    /**
+     * property for data object which is use for access data on design file while render
+     */
     data = {};
 
     constructor() {
@@ -26,8 +32,13 @@ class WebPage {
         this.pageLoad(httpContext);
     }
 
+    /**
+     * pageload - Event call when page load
+     * @param {HttpContext} http - HttpContext of the current request
+     */
     async pageLoad(http) {
         http.response.render(this.route, {
+            http: http,
             req: http.request,
             res: http.response,
             next: http.next,
@@ -36,15 +47,12 @@ class WebPage {
             data: this.data || {}
         });
     }
-
+    /**
+     * setData function use for the set data in  data object which can we access on design file while render
+     * @param  {Object} option - Data in object JSON
+     */
     setData(option) {
         this.data = Object.assign({}, this.data, option);
-    }
-
-    setBootstrapAlert(message, type, subMessage) {
-        this.data = Object.assign({}, this.data, {
-            alert: { message, type, subMessage }
-        });
     }
 }
 module.exports = WebPage;
