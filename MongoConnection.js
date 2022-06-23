@@ -10,26 +10,41 @@ const fs = require('fs');
 const path = require('path');
 
 const externalModelsPath = path.resolve('./Model');
-const ngg = require('./Model')
+const internalModelsPath = path.resolve('node_modules/rest-code/Model');
+const ngg = require('./Model');
+
+const delay = (time) => {
+    if (!time) {
+        throw new Error("delay Time cannot be empty, delay(time)");
+    };
+    return new Promise((res) => {
+        setTimeout(() => {
+            res(null);
+        }, Number(time));
+    });
+}
 
 class Database {
-    static registerSchema() {
+    static async registerSchema() {
         console.log(process.cwd());
         if (fs.existsSync(externalModelsPath)) {
             const externalModels = fs.readdirSync(externalModelsPath);
-            externalModels.forEach(key => { require(`${externalModelsPath}/${key}`); });
+            externalModels.forEach(key => {
+                const modelPath = path.join(externalModelsPath, `${key}`);
+                if (!(modelPath.indexOf("User") > -1)) {
+                    console.info("registerSchema", modelPath);
+                    require(modelPath);
+                }
+            });
         }
 
-        const internalModels = fs.readdirSync(path.resolve('./Model'));
-        internalModels.forEach(key => { require(path.resolve(`./Model/${key}`)); });
+        if (fs.existsSync(internalModelsPath)) {
+            const internalModels = fs.readdirSync(internalModelsPath);
+            internalModels.forEach(key => { require(path.join(internalModelsPath, `${key}`)) });
+        }
     }
 
     static connect() {
-        mongoose.connect(process.env.DATABASE, {
-            keepAlive: true,
-            maxPoolSize: 100
-        });
-
         mongoose.connection.on('error', function (e) {
             console.log("db: mongodb error " + e);
             // reconnect here
@@ -58,6 +73,11 @@ class Database {
 
         mongoose.connection.on('close', function () {
             console.log('db: mongodb connection closed');
+        });
+
+        mongoose.connect(process.env.DATABASE, {
+            keepAlive: true,
+            maxPoolSize: 100
         });
     }
 }

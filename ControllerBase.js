@@ -13,6 +13,7 @@ const { controller, messages } = require('./constants');
 
 class ControllerBase {
 
+    modelName = null;
     isAuthEnabled = true;
     routeParams = [];
 
@@ -28,7 +29,7 @@ class ControllerBase {
     }
 
     get model() {
-        return mongoose.model(this.constructor.name);
+        return mongoose.model(this.modelName || this.constructor.name);
     }
 
     async init(req, res, next) {
@@ -53,13 +54,7 @@ class ControllerBase {
 
     async execute(http) { throw new Error("Not Implemented"); }
     async afterSave(http) { return null; };
-    async beforeSave(http, response) { return null; };
-
-    async afterLoad(http) { return null; };
-    async beforeLoad(http, response) { return null; };
-
-    async afterDelete(http, id) { return null; };
-    async beforeDelete(http, id) { return null; };
+    async beforeSave(http) { return null; };
 
     async getCombos(http) {
         const localLookupListPath = path.resolve('LookupList.js');

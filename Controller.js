@@ -11,6 +11,7 @@ const Logger = require('./Helper/Logger');
 const ControllerBase = require('./ControllerBase');
 const { controller, messages } = require('./constants');
 const mongoose = require('mongoose');
+const moment = require('moment');
 
 const ignorePropertes = [
     "action", "populate"
@@ -67,10 +68,12 @@ class Controller extends ControllerBase {
                     response = await this.list(http);
                     //Export data
                     if (http.params.action.toUpperCase() === controller.action.EXPORT) {
+                        response = await this.list(http, true);
                         let type = !Utility.isNullOrEmpty(http.params.type) ? http.params.type.toUpperCase() : controller.exportType.EXCEL;
                         this.dataExport(type, response.data.records, http);
                         return null;
                     }
+                    response = await this.list(http);
                     break;
 
                 default:
@@ -169,31 +172,39 @@ class Controller extends ControllerBase {
     createFilter(filters = {}) {
         const filter = {};
         for (const key in filters) {
-            let value = filters[key];
-            const type = this.model.schema.obj[key].type.name;
+            let item = filters[key];
+            const type = this.model.schema.obj[item.field].type.name;
             switch (type) {
                 case "Number":
+                    filter[item.field] = Number(item.value);
+                    break;
+
                 case "Date":
-                case "String":
+                    const start = moment(item.value).startOf('day');
+                    const end = moment(item.value).endOf('day');
+                    filter[item.field] = {
+                        $gte: start.toDate(),
+                        $lt: end.toDate()
+                    }
+                    break;
+
                 case "Boolean":
-                    value = value;
+                    filter[item.field] = (JSON.parse(item.value) == 1 ? true : false || false)
                     break;
 
                 case "ObjectId":
-                    value = mongoose.Types.ObjectId(value)
+                    filter[item.field] = mongoose.Types.ObjectId(item.value)
                     break;
 
                 default:
-                    value = value;
+                    filter[item.field] = item.operator == 'StartsWith' ? { '$regex': item.value, '$options': 'i' } : item.value;
                     break;
             }
-
-            filter[key] = value;
         }
         return filter;
     }
 
-    async list(httpContext) {
+    async list(httpContext, isExport) {
         let params = httpContext.params;
         try {
             let comboData = await this.getCombos(httpContext);
@@ -222,11 +233,16 @@ class Controller extends ControllerBase {
             }
             //Sorting
             if (params.sort && params.dir) {
-                options.push({ "$sort": { [params.sort]: params.dir.toLowerCase() == 'DESC' ? - 1 : 0 } });
+                aggregateOptions.push({ "$sort": { [params.sort]: params.dir.toLowerCase() == 'desc' ? - 1 : 1 } });
             }
+
+            if (isExport) {
+                params.limit = 50000;
+            }
+
             aggregateOptions.push({
                 "$facet": {
-                    records: [{ $skip: params.start || 0 }, { $limit: Number(params?.limit || 50) }],
+                    records: [{ $skip: Number(params?.start || 0) }, { $limit: Number(params?.limit || 50) }],
                     recordCount: [
                         {
                             $count: 'count'
@@ -234,6 +250,7 @@ class Controller extends ControllerBase {
                     ]
                 }
             });
+
             let result = await this.model.aggregate(aggregateOptions);
             result = result[0];
             return {
@@ -241,7 +258,7 @@ class Controller extends ControllerBase {
                 data: {
                     records: result.records,
                     combos: comboData,
-                    recordCount: result.recordCount[0].count
+                    recordCount: result.recordCount.length > 0 ? result.recordCount[0].count : 0
                 }
             }
             // //Export data

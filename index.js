@@ -33,8 +33,10 @@ const WebPageRoute = require('./WebPageRoute');
 const Route = require('./Route');
 const TaskManager = require('./TaskManager');
 const Notification = require('./Notification');
+const Mongoose = require('mongoose');
 
 class Framework {
+    static get Mongoose() { return Mongoose };
     static get Notification() { return Notification };
     static get DateTime() { return DateTime };
     static get TaskManager() { return TaskManager };
