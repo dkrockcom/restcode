@@ -35,6 +35,8 @@ const TaskManager = require('./TaskManager');
 const Notification = require('./Notification');
 const Mongoose = require('mongoose');
 
+const isLoggerApiEnable = JSON.parse(process.env.LOGGER_API_LOG_ENABLE || false);
+
 class Framework {
     static get Mongoose() { return Mongoose };
     static get Notification() { return Notification };
@@ -51,12 +53,22 @@ class Framework {
     static StartApp(program) {
         return new program();
     }
+
     static Initialize(onException, cb) {
+
+        if (isLoggerApiEnable) {
+            const apiLogger = Logger.logger.getLogger("endPointLog");
+            app.use(Logger.logger.connectLogger(apiLogger, {
+                level: "info", format: (req, res, format) => {
+                    return format(`:remote-addr :method :url time: ${res.responseTime}`)
+                }
+            }));
+        }
+
         if (Boolean(process.env.CORS_ENABLED)) {
             //Access Control Allow
-            let origin = process.env.CORS_ORIGIN;
             const corsOptions = {
-                origin: origin,
+                origin: process.env.CORS_ORIGIN,
                 credentials: true,            //access-control-allow-credentials:true
                 optionSuccessStatus: 200
             }
@@ -110,11 +122,10 @@ class Framework {
 
         const server = http.createServer(app);
         let appPort = process.env.PORT || process.env.PORT;
-        server.listen(appPort, () => {
+        server.listen(appPort, async () => {
             Logger.info("Application is running at localhost:" + appPort);
             Logger.info("Application is started on: " + new Date());
-            MongoConnection.connect();
-            MongoConnection.registerSchema();
+            await MongoConnection.connect();
             cb(app, server);
         });
     }

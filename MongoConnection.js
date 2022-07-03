@@ -12,34 +12,28 @@ const Logger = require('./Helper/Logger');
 
 const externalModelsPath = path.resolve('./Model');
 const internalModelsPath = path.resolve('node_modules/rest-code/Model');
-const ngg = require('./Model');
 
-const delay = (time) => {
-    if (!time) {
-        throw new Error("delay Time cannot be empty, delay(time)");
-    };
-    return new Promise((res) => {
-        setTimeout(() => {
-            res(null);
-        }, Number(time));
-    });
+const loadModels = (modelsPath) => {
+    if (fs.existsSync(modelsPath)) {
+        const models = fs.readdirSync(modelsPath);
+        models.forEach(key => {
+            const modelName = key.split(".")[0];
+            if (mongoose.models.hasOwnProperty(modelName)) {
+                delete mongoose.models[modelName];
+            }
+            require(path.join(modelsPath, `${key}`))
+        });
+    }
 }
 
 class Database {
-    static async registerSchema() {
-        console.log(process.cwd());
-        if (fs.existsSync(externalModelsPath)) {
-            const externalModels = fs.readdirSync(externalModelsPath);
-            externalModels.forEach(key => require(modelPath));
-        }
+    static async connect() {
 
-        if (fs.existsSync(internalModelsPath)) {
-            const internalModels = fs.readdirSync(internalModelsPath);
-            internalModels.forEach(key => { require(path.join(internalModelsPath, `${key}`)) });
-        }
-    }
+        // Load internal models
+        loadModels(internalModelsPath);
+        // Load external models
+        loadModels(externalModelsPath);
 
-    static connect() {
         mongoose.connection.on('error', function (e) {
             Logger.info("db: mongodb error", e);
             // reconnect here
@@ -70,9 +64,9 @@ class Database {
             Logger.info('db: mongodb connection closed');
         });
 
-        mongoose.connect(process.env.DATABASE, {
+        await mongoose.connect(process.env.DATABASE, {
             keepAlive: true,
-            maxPoolSize: 100
+            maxPoolSize: 1000
         });
     }
 }

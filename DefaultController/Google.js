@@ -9,7 +9,7 @@ const ControllerBase = require('./../ControllerBase');
 const Helper = require('./../Helper');
 const Utility = require('./../Utility');
 const GoogleApi = require('googleapis');
-const { UserModel } = require('./../Model');
+const mongoose = require('mongoose');
 const LoginHelper = require('./../LoginHelper');
 
 class Google extends ControllerBase {
@@ -33,6 +33,7 @@ class Google extends ControllerBase {
             if (resp.success) {
                 http.response.redirect(process.env.GOOGLE_APP_REDIRECT);
             } else {
+                const UserModel = mongoose.model("User");
                 let userBusiness = new UserModel();
                 userBusiness.password = null;
                 userBusiness.email = accountInfo.email;

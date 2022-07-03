@@ -33,9 +33,13 @@ log4js.configure({
         error: { type: 'dateFile', filename: 'logs/error.log', keepFileExt: true, maxLogSize: fileSize },
         info: { type: 'dateFile', filename: 'logs/info.log', keepFileExt: true, maxLogSize: fileSize },
         debug: { type: 'dateFile', filename: 'logs/debug.log', keepFileExt: true, maxLogSize: fileSize },
+        endPointLog: { type: 'dateFile', filename: 'logs/endPointLog.log', keepFileExt: true, maxLogSize: fileSize },
         console: { type: "console" }
     },
-    categories: categories
+    categories: {
+        ...categories,
+        endPointLog: { appenders: ["endPointLog"], level: "info" },
+    }
 });
 
 const errorLogger = log4js.getLogger('error');

@@ -6,7 +6,7 @@
  */
 
 const ControllerBase = require('./../ControllerBase');
-const { UserModel } = require('./../Model');
+const mongoose = require('mongoose');
 const Utility = require('./../Utility');
 const { NotificationParams, Notification } = require("./../Notification");
 
@@ -23,10 +23,10 @@ class ForgotPassword extends ControllerBase {
             }
             email = email.trim();
 
-            let result = await UserModel.findOne({ email: email });
+            let result = await mongoose.model("User").findOne({ email: email });
             if (result) {
                 let hash = Utility.generateUUID();
-                await UserModel.updateOne({ _id: result._id }, {
+                await mongoose.model("User").updateOne({ _id: result._id }, {
                     $set: {
                         passKey: hash,
                         passwordResetRequestOn: new Date()

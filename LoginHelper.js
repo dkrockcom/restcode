@@ -6,7 +6,7 @@
  */
 
 const md5 = require("md5");
-const { UserModel } = require('./Model');
+const mongoose = require('mongoose');
 const Logger = require('./Helper/Logger');
 
 class LoginHelper {
@@ -15,7 +15,7 @@ class LoginHelper {
         if (args.password) {
             args.password = this.passwordHash(args.password);
         }
-        const userRecord = await UserModel.findOne(args);
+        const userRecord = await mongoose.model("User").findOne(args);
         if (userRecord) {
             response.success = true;
             response.user = userRecord._doc;
@@ -39,7 +39,7 @@ class LoginHelper {
         const response = { success: false, message: "Password not changed" };
         try {
             const newePassword = this.passwordHash(password);
-            await UserModel.updateOne({ _id: userId }, { $set: { password: newePassword } });
+            await mongoose.model("User").updateOne({ _id: userId }, { $set: { password: newePassword } });
             response.success = true;
             response.message = "Password successfully changed";
         } catch (ex) {
