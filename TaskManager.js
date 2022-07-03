@@ -23,9 +23,10 @@ class TaskManager {
             const job = new NodeCronJob.CronJob(activeTask.Interval, async () => {
                 const TaskKey = `${activeTask.Name}_TASK`;
                 try {
-                    console.time(TaskKey);
+                    const d1 = new Date();
                     await activeTask.Task.execute();
-                    console.time(TaskKey);
+                    const d2 = new Date();
+                    Logger.debug(`Task_Execution_Time  Task: ${activeTask.Name} Time: ${d2 - d1}ms`)
                 } catch (ex) {
                     Logger.error(ex);
                 }

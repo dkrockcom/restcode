@@ -5,37 +5,55 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const winston = require('winston');
-const { combine, timestamp, prettyPrint, errors } = winston.format;
-require('winston-daily-rotate-file');
+const log4js = require('log4js');
 
-const createTransport = ({ level, customFileName, ...others }) => {
-    return new winston.transports.DailyRotateFile({
-        filename: `logs/%DATE%/${customFileName || level}-%DATE%.log`,
-        datePattern: 'YYYY-MM-DD',
-        prepend: true,
-        level: level,
-        maxDays: 0,
-        maxSize: '10m',
-        ...others
-    });
-};
+const sizeInMB = 1048576;
+const fileSize = (process.env.LOGGER_MAX_FILE_SIZE || 10) * sizeInMB;
+const level = process.env.LOGGER_LEVEL || "trace";
+let categories = {
+    info: { appenders: ["info"], level: 'info' },
+    debug: { appenders: ["debug"], level: 'debug' },
+    error: { appenders: ["error"], level: 'error' }
+}
 
-const infoLog = createTransport({ level: 'info', handleExceptions: false });
-const errorLog = createTransport({ level: 'error', handleExceptions: true });
-const debugLog = createTransport({ level: 'debug', handleExceptions: false });
-const consoleLogs = new winston.transports.Console({ handleExceptions: true, level: process.env.NODE_ENV === "production" ? 'warn' : undefined });
+for (const key in categories) {
+    const item = categories[key];
+    if (item.level == level || level == "trace") {
+        item.appenders.push("console");
+    }
+}
 
-let transports = [
-    infoLog, errorLog, debugLog, consoleLogs
-];
+categories = {
+    default: { appenders: ["console", "info", "debug", "error"], level: 'trace' },
+    ...categories,
+}
 
-const logger = winston.createLogger({
-    format: combine(
-        errors({ stack: true }),
-        timestamp(),
-        prettyPrint()
-    ),
-    transports: transports
+log4js.configure({
+    appenders: {
+        error: { type: 'dateFile', filename: 'logs/error.log', keepFileExt: true, maxLogSize: fileSize },
+        info: { type: 'dateFile', filename: 'logs/info.log', keepFileExt: true, maxLogSize: fileSize },
+        debug: { type: 'dateFile', filename: 'logs/debug.log', keepFileExt: true, maxLogSize: fileSize },
+        console: { type: "console" }
+    },
+    categories: categories
 });
-module.exports = logger;
+
+const errorLogger = log4js.getLogger('error');
+const debugLogger = log4js.getLogger('debug');
+const infoLogger = log4js.getLogger('info');
+
+class Logger {
+    static get logger() { return log4js }
+    static debug(message, ...args) {
+        return debugLogger.debug(message, ...args);
+    }
+
+    static error(message, ...args) {
+        return errorLogger.error(message, ...args);
+    }
+
+    static info(message, ...args) {
+        return infoLogger.info(message, ...args);
+    }
+}
+module.exports = Logger;

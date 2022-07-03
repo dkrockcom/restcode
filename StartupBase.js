@@ -35,7 +35,7 @@ class StartupBase {
     }
 
     async onConfigure(app, server) {
-        Framework.TaskManager.Add(new NotificationTask(), '*/30 * * * * *', "TestTask");
+        Framework.TaskManager.Add(new NotificationTask(), '*/30 * * * * *', "NotificationTask");
         Framework.TaskManager.Initialize();
     }
 }
