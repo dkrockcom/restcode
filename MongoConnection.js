@@ -13,6 +13,9 @@ const Logger = require('./Helper/Logger');
 const externalModelsPath = path.resolve('./Model');
 const internalModelsPath = path.resolve('node_modules/rest-code/Model');
 
+const LookupModel = require("./Model/Lookup");
+const LookupTypeModel = require("./Model/LookupType");
+
 const loadModels = (modelsPath) => {
     if (fs.existsSync(modelsPath)) {
         const models = fs.readdirSync(modelsPath);
@@ -39,7 +42,32 @@ class Database {
             // reconnect here
         });
 
-        mongoose.connection.on('connected', function () {
+        mongoose.connection.on('connected', async function () {
+            const LookupCount = await LookupModel.count({});
+            // const LookupTypeCount = await LookupTypeModel.count({});
+            if (LookupCount == 0) {
+                const lookupDoc = await LookupTypeModel.create({
+                    lookupType: "Fruits",
+                    scopeId: 0
+                });
+                const lookupTypeDoc = await LookupModel.create([
+                    {
+                        lookupTypeId: lookupDoc._id,
+                        displayValue: "Apple",
+                        scopeId: 1
+                    },
+                    {
+                        lookupTypeId: lookupDoc._id,
+                        displayValue: "Banana",
+                        scopeId: 2
+                    },
+                    {
+                        lookupTypeId: lookupDoc._id,
+                        displayValue: "Orange",
+                        scopeId: 2
+                    }
+                ]);
+            }
             Logger.info('db: mongodb connected');
         });
 
