@@ -73,7 +73,6 @@ class Controller extends ControllerBase {
                         this.dataExport(type, response.data.records, http);
                         return null;
                     }
-                    response = await this.list(http);
                     break;
 
                 default:

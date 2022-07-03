@@ -17,6 +17,7 @@ const ControllerBase = require('./ControllerBase');
 const Controller = require('./Controller');
 const Utility = require('./Utility');
 const http = require('http');
+const https = require('https');
 const multer = require('multer');
 const bodyparser = require('body-parser');
 const ExceptionHandler = require('./ExceptionHandler');
@@ -36,6 +37,18 @@ const Notification = require('./Notification');
 const Mongoose = require('mongoose');
 
 const isLoggerApiEnable = JSON.parse(process.env.LOGGER_API_LOG_ENABLE || false);
+
+app.use((req, res, next) => {
+    req.authenticate = function () {
+        const options = {
+            maxAge: (24 * 60 * 60 * 1000), // 24 hours
+            signed: true // Indicates if the cookie should be signed
+        }
+        req.session.isAuthenticated = true;
+        req.sessionOptions = options;
+    };
+    next();
+});
 
 class Framework {
     static get Mongoose() { return Mongoose };
@@ -119,8 +132,16 @@ class Framework {
         //         res.json({ success: false, message: '404 Not Found' });
         //     }
         // });
-
-        const server = http.createServer(app);
+        let server;
+        const isHttpsEnabled = JSON.parse(process.env.HTTPS_ENABLE || false);
+        if (isHttpsEnabled) {
+            server = https.createServer(app, {
+                key: fs.readFileSync(process.env.HTTPS_PRIVATE_KEY),
+                cert: fs.readFileSync(process.env.HTTPS_CERT)
+            });
+        } else {
+            server = http.createServer(app);
+        }
         let appPort = process.env.PORT || process.env.PORT;
         server.listen(appPort, async () => {
             Logger.info("Application is running at localhost:" + appPort);
