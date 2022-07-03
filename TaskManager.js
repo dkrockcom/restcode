@@ -10,6 +10,7 @@ const Logger = require('./Helper/Logger');
 
 const Tasks = [];
 const ActiveTask = [];
+const isTaskLogEnabled = JSON.parse(process.env.TASK_OR_JOB_TIME_LOG_ENABLED || false);
 
 class TaskManager {
     static get Tasks() { return Tasks };
@@ -26,7 +27,9 @@ class TaskManager {
                     const d1 = new Date();
                     await activeTask.Task.execute();
                     const d2 = new Date();
-                    Logger.debug(`Task_Execution_Time  Task: ${activeTask.Name} Time: ${d2 - d1}ms`)
+                    if (isTaskLogEnabled) {
+                        Logger.debug(`Task_Execution_Time  Task: ${activeTask.Name} Time: ${d2 - d1}ms`);
+                    }
                 } catch (ex) {
                     Logger.error(ex);
                 }

@@ -35,7 +35,10 @@ class StartupBase {
     }
 
     async onConfigure(app, server) {
-        Framework.TaskManager.Add(new NotificationTask(), '*/30 * * * * *', "NotificationTask");
+        const isNotificationTaskEnabled = JSON.parse(process.env.NOTIFICATION_TASK_ENABLED || false);
+        if (isNotificationTaskEnabled) {
+            Framework.TaskManager.Add(new NotificationTask(), '*/30 * * * * *', "NotificationTask");
+        }
         Framework.TaskManager.Initialize();
     }
 }
