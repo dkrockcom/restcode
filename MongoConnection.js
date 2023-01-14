@@ -13,18 +13,14 @@ const Logger = require('./Helper/Logger');
 const externalModelsPath = path.resolve('./Model');
 const internalModelsPath = path.resolve('node_modules/rest-code/Model');
 
-const LookupModel = require("./Model/Lookup");
-const LookupTypeModel = require("./Model/LookupType");
-
 const loadModels = (modelsPath) => {
     if (fs.existsSync(modelsPath)) {
         const models = fs.readdirSync(modelsPath);
         models.forEach(key => {
             const modelName = key.split(".")[0];
-            if (mongoose.models.hasOwnProperty(modelName)) {
-                delete mongoose.models[modelName];
+            if (!mongoose.models.hasOwnProperty(modelName)) {
+                require(path.join(modelsPath, `${key}`));
             }
-            require(path.join(modelsPath, `${key}`))
         });
     }
 }
@@ -33,10 +29,10 @@ class Database {
     static get mongoose() { return mongoose }
     static async connect() {
 
-        // Load external models
-        loadModels(externalModelsPath);
         // Load internal models
         loadModels(internalModelsPath);
+        // Load external models
+        loadModels(externalModelsPath);
 
         mongoose.connection.on('error', function (e) {
             Logger.info("db: mongodb error", e);
@@ -44,6 +40,8 @@ class Database {
         });
 
         mongoose.connection.on('connected', async function () {
+            const LookupModel = mongoose.model("Lookup");
+            const LookupTypeModel = mongoose.model("LookupType");
             const LookupCount = await LookupModel.count({});
             // const LookupTypeCount = await LookupTypeModel.count({});
             if (LookupCount == 0) {
