@@ -30,12 +30,13 @@ const loadModels = (modelsPath) => {
 }
 
 class Database {
+    static get mongoose() { return mongoose }
     static async connect() {
 
-        // Load internal models
-        loadModels(internalModelsPath);
         // Load external models
         loadModels(externalModelsPath);
+        // Load internal models
+        loadModels(internalModelsPath);
 
         mongoose.connection.on('error', function (e) {
             Logger.info("db: mongodb error", e);

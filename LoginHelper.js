@@ -15,17 +15,25 @@ class LoginHelper {
         if (args.password) {
             args.password = this.passwordHash(args.password);
         }
-        const userRecord = await mongoose.model("User").findOne(args);
-        if (userRecord) {
+        const copyArgs = JSON.parse(JSON.stringify(args));
+        delete copyArgs["password"];
+        let userRecord = await mongoose.model("User").findOne(copyArgs);
+        if (!userRecord) {
+            response.message = "User not registered";
+            return response;
+        }
+        if (userRecord && userRecord.password === args.password) {
+            const userdata = userRecord._doc;
+            delete userdata["password"];
             response.success = true;
-            response.user = userRecord._doc;
+            response.user = userdata;
             response.message = "Logged In";
             const options = {
                 maxAge: (24 * 60 * 60 * 1000), // 24 hours
                 signed: true // Indicates if the cookie should be signed
             }
-            http.request.session.user = userRecord;
-            http.request.session.userId = userRecord._id;
+            http.request.session.user = userdata;
+            http.request.session.userId = userdata._id;
             http.request.session.isAuthenticated = true;
             http.request.sessionOptions = options;
             //TODO:

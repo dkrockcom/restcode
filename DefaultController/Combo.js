@@ -10,7 +10,7 @@ const ControllerBase = require('./../ControllerBase');
 class Combo extends ControllerBase {
     constructor() {
         super();
-        this._isAuthEnabled = false;
+        this.isAuthEnabled = false;
     }
 
     async execute(http) {

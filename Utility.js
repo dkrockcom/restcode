@@ -137,8 +137,11 @@ class Utility {
     static deSerializeObject(value, defaultValue = {}) {
         let returnValue = defaultValue;
         try {
-            if (value)
+            if (value && typeof (value) !== 'object') {
                 returnValue = JSON.parse(value);
+            } else {
+                returnValue = value;
+            }
         } catch (ex) {
             throw ex;
         }
