@@ -11,6 +11,7 @@ const Schema = mongoose.Schema
 const schema = new Schema({
     lookupTypeId: { type: mongoose.Types.ObjectId, ref: 'LookupType' },
     displayValue: { type: String },
+    customValue: { type: String },
     sortOrder: { type: Number }
 }, { timestamps: true });
 

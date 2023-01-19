@@ -18,6 +18,9 @@ class LookupListBase {
         this.notFound = [];
     }
 
+    get Lookup() { return Lookup; }
+    get LookupType() { return LookupType; }
+
     async LoadCombo() {
         let results = [];
         if (this.comboList.length > 0) {
@@ -39,7 +42,7 @@ class LookupListBase {
 
         for (let index = 0; index < this.notFound.length; index++) {
             const item = this.notFound[index];
-            this.comboData[item] = await this.customLookup(item, new CustomLookupInfo());;
+            this.comboData[item] = await this.customLookup(item, new CustomLookupInfo());
         }
         return this.comboData;
     }
@@ -63,18 +66,24 @@ class LookupListBase {
     }
 
     async getComboData(item) {
+        const { project, sort } = this.customizeData(item, {
+            sort: { sortOrder: -1 },
+            project: {
+                "_id": 0,
+                "lookupId": "$_id",
+                "displayValue": 1,
+                "customValue": 1
+            }
+        });
         return await Lookup.aggregate([
             { $match: { lookupTypeId: item._id } },
-            { $sort: { sortOrder: -1 } },
-            {
-                "$project": {
-                    "_id": 0,
-                    "lookupId": "$_id",
-                    "displayValue": 1,
-                    "customValue": 1
-                }
-            }
-        ])
+            { $sort: sort },
+            { $project: project }
+        ]);
+    }
+
+    customizeData(item, data) {
+        return data;
     }
 }
 module.exports = LookupListBase;
