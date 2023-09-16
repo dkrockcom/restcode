@@ -20,6 +20,7 @@ const ignorePropertes = [
 class Controller extends ControllerBase {
 
     isHardDelete = false;
+    fetchDeletedRecords = false;
 
     getProperties = (httpContext) => {
         let params = { ...httpContext.params };
@@ -213,7 +214,10 @@ class Controller extends ControllerBase {
             const filters = await this.getFilter(params.filters, httpContext);
             if (filters) {
                 //Prepare filters and pass to aggregate
-                const finalFilter = this.createFilter(filters);
+                let finalFilter = this.createFilter(filters);
+                if (!this.fetchDeletedRecords) {
+                    finalFilter = { ...finalFilter, isDeleted: false }
+                }
                 aggregateOptions.push({
                     "$match": finalFilter
                 });
