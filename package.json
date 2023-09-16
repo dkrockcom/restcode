@@ -1,6 +1,6 @@
 {
   "name": "rest-code",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Node JS Framework",
   "main": "index.js",
   "scripts": {
