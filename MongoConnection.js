@@ -42,7 +42,7 @@ class Database {
         mongoose.connection.on('connected', async function () {
             const LookupModel = mongoose.model("Lookup");
             const LookupTypeModel = mongoose.model("LookupType");
-            const LookupCount = await LookupModel.count({});
+            const LookupCount = await LookupModel.countDocuments({});
             // const LookupTypeCount = await LookupTypeModel.count({});
             if (LookupCount == 0) {
                 const lookupDoc = await LookupTypeModel.create({
@@ -92,7 +92,6 @@ class Database {
         });
 
         await mongoose.connect(process.env.DATABASE, {
-            keepAlive: true,
             maxPoolSize: 1000
         });
     }

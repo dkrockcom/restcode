@@ -7,8 +7,6 @@
 
 const CustomLookupInfo = require('./CustomLookupInfo');
 const Utility = require('../Utility');
-const Lookup = require('../Model/Lookup');
-const LookupType = require('../Model/LookupType');
 const mongoose = require('mongoose');
 
 class LookupListBase {
@@ -18,8 +16,8 @@ class LookupListBase {
         this.notFound = [];
     }
 
-    get Lookup() { return Lookup; }
-    get LookupType() { return LookupType; }
+    get Lookup() { return mongoose.model("Lookup"); }
+    get LookupType() { return mongoose.model("LookupType"); }
 
     async LoadCombo() {
         let results = [];

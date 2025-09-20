@@ -9,15 +9,20 @@ const Logger = require('./../Helper/Logger');
 const NotificationParams = require('./NotificationParams');
 const EmailEngine = require("./EmailEngine");
 const TextEngine = require("./TextEngine");
-const NotificationQueue = require('./../Model/NotificationQueue');
+const mongoose = require('mongoose');
 
 class Notification {
+
+    static get NotificationQueue() {
+        return mongoose.model("NotificationQueue");
+    }
+
     /**
      * Function for add email in queue for process
      * @param  {NotificationParams} params - NotificationParams class instance
      */
     static async sendEmail(param = new NotificationParams()) {
-        let nq = new NotificationQueue({
+        let nq = new this.NotificationQueue({
             to: param.to,
             from: param.from,
             subject: param.subject,

@@ -45,7 +45,7 @@ class Controller extends ControllerBase {
         const id = http.params._id || http.params.id;
         const populate = http.params.populate;
         try {
-            switch (http.params.action.toUpperCase()) {
+            switch (http.params?.action?.toUpperCase()) {
                 case controller.action.SAVE:
                     await this.beforeSave(http);
                     response = await this.save(http);

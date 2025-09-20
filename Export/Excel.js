@@ -4,12 +4,17 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+const xlsx = require("json-as-xlsx")
 
-const nodeExcel = require('excel-export');
-
+const settings = {
+    writeOptions: {
+        type: "buffer",
+        bookType: "xlsx",
+    }
+}
 class Excel {
     static Export({ filename, data, config, http }) {
-        let xls = this.Transform(data, config);
+        const xls = this.Transform(data, settings);
         http.response.setHeader('Content-Type', 'application/vnd.openxmlformats');
         http.response.setHeader("Content-Disposition", `attachment; filename=${filename}.xlsx`);
         http.response.end(xls, 'binary');
@@ -21,8 +26,8 @@ class Excel {
     }
 
     static Transform(json, config) {
-        var conf = this.PrepareJson(json, config);
-        var result = nodeExcel.execute(conf);
+        // const jsn = this.PrepareJson(json, null);
+        const result = xlsx(json, config)
         return result;
     };
 
