@@ -46,7 +46,7 @@ class Route {
         // }
     }
 
-    getRouteRouteParams(params) {
+    getRouteParams(params) {
         let rpString = '';
         params.forEach(item => {
             rpString += `/:${item.name}${item.required ? '' : '?'}`;
@@ -57,14 +57,14 @@ class Route {
     setRoute(ctrl, index) {
         if (ignoreList.findIndex(e => e == ctrl) == -1) {
             let obj = this[ctrl];
-            let routeRouteParams = '';
+            let routeParams = '';
 
             // if (!defaultCtrl.hasOwnProperty(ctrl)) {
             //     return;
             // }
             obj = new obj();
             if (obj.routeParams && obj.routeParams.length > 0) {
-                routeRouteParams = this.getRouteRouteParams(obj.routeParams);
+                routeParams = this.getRouteParams(obj.routeParams);
             }
 
             // if (Business[ctrl]) {
@@ -75,7 +75,7 @@ class Route {
             if (this.apiPrefix === '')
                 this.apiPrefix = null;
 
-            this._express.route(`${this.apiPrefix ? `/${this.apiPrefix}` : ''}/${ctrl}${routeRouteParams}`)
+            this._express.route(`${this.apiPrefix ? `/${this.apiPrefix}` : ''}/${ctrl}${routeParams}`)
                 .get(obj.init.bind(obj))
                 .post(obj.init.bind(obj));
         }

@@ -10,12 +10,14 @@ const path = require('path');
 const httpContext = require('./Helper/HttpContext');
 const mongoose = require('mongoose');
 const { controller, messages } = require('./constants');
+const { GET, POST, PATCH, PUT, DELETE } = controller.METHOD;
 
 class ControllerBase {
 
     modelName = null;
     isAuthEnabled = true;
     routeParams = [];
+    method = [GET, POST, PATCH, PUT, DELETE];
 
     response(status, message, data) {
         let option = {

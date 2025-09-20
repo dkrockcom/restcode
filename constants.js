@@ -27,6 +27,13 @@ module.exports = {
         defaultProperties: {
             createdBy: 'CreatedByUserId',
             modifiedBy: 'ModifiedByUserId'
+        },
+        METHOD: {
+            GET: "GET",
+            POST: "POST",
+            PATCH: "PATCH",
+            PUT: "PUT",
+            DELETE: "DELETE"
         }
     },
     messages: {
