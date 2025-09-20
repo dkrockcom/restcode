@@ -166,7 +166,16 @@ class Controller extends ControllerBase {
     }
 
     async getpProjection(projection, httpContext) {
-        return projection || null;
+        if (projection) {
+            const proj = {};
+            let stringWithoutSpaces = projection.replace(/\s/g, "");
+            stringWithoutSpaces = stringWithoutSpaces.split(",");
+            stringWithoutSpaces.forEach(pr => {
+                proj[pr] = 1;
+            });
+            return { "$project": proj };
+        }
+        return null;
     }
 
     createFilter(filters = {}) {

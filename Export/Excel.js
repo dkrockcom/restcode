@@ -14,10 +14,14 @@ const settings = {
 }
 class Excel {
     static Export({ filename, data, config, http }) {
-        const xls = this.Transform(data, settings);
-        http.response.setHeader('Content-Type', 'application/vnd.openxmlformats');
-        http.response.setHeader("Content-Disposition", `attachment; filename=${filename}.xlsx`);
-        http.response.end(xls, 'binary');
+        try {
+            const xls = this.Transform(data, settings);
+            http.response.setHeader('Content-Type', 'application/vnd.openxmlformats');
+            http.response.setHeader("Content-Disposition", `attachment; filename=${filename}.xlsx`);
+            http.response.end(xls, 'binary');
+        } catch (error) {
+            throw new Error("Invalid Columns or some column have nested object values");
+        }
     }
 
     static Binary(data, config) {
@@ -26,7 +30,6 @@ class Excel {
     }
 
     static Transform(json, config) {
-        // const jsn = this.PrepareJson(json, null);
         const result = xlsx(json, config)
         return result;
     };
