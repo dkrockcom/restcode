@@ -123,7 +123,10 @@ class Notification {
     static async updateRecord(record, status) {
         try {
             let retryCount = record.retryCount;
-            retryCount++;
+
+            if (!status) {
+                retryCount++;
+            }
 
             let updateOption = {
                 isSent: status,
