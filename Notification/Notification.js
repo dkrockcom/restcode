@@ -13,6 +13,8 @@ const mongoose = require('mongoose');
 
 class Notification {
 
+    inProgress = false;
+
     static get NotificationQueue() {
         return mongoose.model("NotificationQueue");
     }
@@ -77,7 +79,12 @@ class Notification {
 
     //Execute - Function Fired from the JOB/Task
     static async execute() {
+        if (this.inProgress) {
+            return;
+        }
+
         try {
+            this.inProgress = true;
             //for now picking only Email Notifications only, as SMS notificaiton is not Implemented
             let results = await this.NotificationQueue.find({ isSent: false, type: 0, retryCount: { $lte: 2 } });
             for (let i = 0; i < results.length; i++) {
@@ -107,6 +114,8 @@ class Notification {
             }
         } catch (ex) {
             Logger.error(ex);
+        } finally {
+            this.inProgress = false;
         }
     }
 
