@@ -47,7 +47,7 @@ class Notification {
      * @param  {NotificationParams} params - NotificationParams class instance
      */
     static async sendText(param = new NotificationParams()) {
-        let nq = new NotificationQueue({
+        let nq = new this.NotificationQueue({
             to: param.to,
             body: param.body,
             //Management fields
@@ -79,7 +79,7 @@ class Notification {
     static async execute() {
         try {
             //for now picking only Email Notifications only, as SMS notificaiton is not Implemented
-            let results = await NotificationQueue.find({ isSent: false, type: 0, retryCount: { $lte: 2 } });
+            let results = await this.NotificationQueue.find({ isSent: false, type: 0, retryCount: { $lte: 2 } });
             for (let i = 0; i < results.length; i++) {
                 const result = results[i];
                 let param = new NotificationParams(result._doc);
@@ -123,7 +123,7 @@ class Notification {
             if (status) {
                 updateOption.sentOn = new Date();
             }
-            await NotificationQueue.updateOne({ _id: record.id }, { $set: updateOption });
+            await this.NotificationQueue.updateOne({ _id: record.id }, { $set: updateOption });
         } catch (ex) {
             Logger.error(ex);
         }
