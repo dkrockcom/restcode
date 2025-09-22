@@ -19,9 +19,6 @@ const ignorePropertes = [
 
 class Controller extends ControllerBase {
 
-    isHardDelete = false;
-    fetchDeletedRecords = false;
-
     getProperties = (httpContext) => {
         let params = { ...httpContext.params };
         const isNew = Utility.isNullOrEmpty(httpContext.params._id);
@@ -146,7 +143,7 @@ class Controller extends ControllerBase {
     }
 
     async delete(ids) {
-        if (this.isHardDelete) {
+        if (!this.model.schema.obj.hasOwnProperty("isDeleted")) {
             await this.model.deleteMany({ _id: { $in: ids.split(",") } })
         } else {
             await this.model.updateMany({ _id: { $in: ids.split(",") } }, { isDeleted: true });
@@ -224,7 +221,7 @@ class Controller extends ControllerBase {
             if (filters) {
                 //Prepare filters and pass to aggregate
                 let finalFilter = this.createFilter(filters);
-                if (!this.fetchDeletedRecords) {
+                if (this.model.schema.obj.hasOwnProperty("isDeleted")) {
                     finalFilter = { ...finalFilter, isDeleted: false }
                 }
                 aggregateOptions.push({
